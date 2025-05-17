@@ -27,6 +27,8 @@ export default $config({
       },
       domain: {
         name: 'stats.bigskybuyers.com',
+        dns: false,
+        cert: 'arn:aws:acm:us-east-1:758722857241:certificate/0677a522-1283-4c1f-9abc-d9e2497ed543',
       },
     });
   },
