@@ -1,6 +1,6 @@
 {
   "name": "umami",
-  "version": "2.18.1",
+  "version": "2.19.0",
   "description": "A modern, privacy-focused alternative to Google Analytics.",
   "author": "Umami Software, Inc. <hello@umami.is>",
   "license": "MIT",
@@ -10,6 +10,8 @@
     "url": "https://github.com/umami-software/umami.git"
   },
   "scripts": {
+    "dev": "next dev",
+    "dev-turbo": "next dev -p 3000 --turbopack",
     "build": "npm-run-all check-env build-db check-db build-tracker build-geo build-app",
     "build-app": "next build",
     "build-components": "rollup -c rollup.components.config.mjs",
@@ -100,6 +102,7 @@
     "is-localhost-ip": "^1.4.0",
     "isbot": "^5.1.16",
     "jsonwebtoken": "^9.0.2",
+    "jszip": "^3.10.1",
     "kafkajs": "^2.1.0",
     "maxmind": "^4.3.24",
     "md5": "^2.3.0",
