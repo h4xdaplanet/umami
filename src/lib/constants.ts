@@ -345,8 +345,9 @@ export const IP_ADDRESS_HEADERS = [
   'x-real-ip',
   'x-cluster-client-ip',
   'x-forwarded',
-  'forwarded',
-  'x-appengine-user-ip',
+  'x-forwarded-for',
+  'x-nf-client-connection-ip',
+  'x-real-ip',
 ];
 
 export const SOCIAL_DOMAINS = [
