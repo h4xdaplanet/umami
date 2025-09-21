@@ -108,6 +108,14 @@ function decodeHeader(s: string | undefined | null): string | undefined | null {
   return Buffer.from(s, 'latin1').toString('utf-8');
 }
 
+function removePortFromIP(ip: string = '') {
+  const split = ip.split(':');
+
+  // Assuming ip is a valid IPv4/IPv6 address, 3 colons is the minumum for IPv6
+  const ipv4 = split.length - 1 < 3;
+  return ipv4 ? split[0] : ip;
+}
+
 export async function getLocation(ip: string = '', headers: Headers, hasPayloadIP: boolean) {
   // Ignore local ips
   if (await isLocalhost(ip)) {
@@ -135,12 +143,14 @@ export async function getLocation(ip: string = '', headers: Headers, hasPayloadI
   if (!global[MAXMIND]) {
     const dir = path.join(process.cwd(), 'geo');
 
-    global[MAXMIND] = await maxmind.open(process.env.GEOLITE_DB_PATH || path.resolve(dir, 'GeoLite2-City.mmdb'));
+    global[MAXMIND] = await maxmind.open(
+      process.env.GEOLITE_DB_PATH || path.resolve(dir, 'GeoLite2-City.mmdb'),
+    );
   }
 
   // When the client IP is extracted from headers, sometimes the value includes a port
-  const cleanIp = ip?.split(':')[0];
-  const result = global[MAXMIND].get(cleanIp);  
+  const cleanIp = removePortFromIP(ip);
+  const result = global[MAXMIND].get(cleanIp);
 
   if (result) {
     const country = result.country?.iso_code ?? result?.registered_country?.iso_code;
