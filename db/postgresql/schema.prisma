@@ -1,6 +1,6 @@
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = ["rhel-openssl-3.0.x"]
+  binaryTargets = ["rhel-openssl-3.0.x", "darwin-arm64"]
 }
 
 datasource db {
@@ -80,7 +80,6 @@ model Website {
   report      Report[]
   revenue     Revenue[]
   sessionData SessionData[]
-  segment     Segment[]
   segment     Segment[]
 
   @@index([userId])
