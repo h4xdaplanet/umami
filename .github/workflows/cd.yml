@@ -2,6 +2,7 @@ name: Create docker images
 
 on:
   push:
+<<<<<<< HEAD
     branches:
       - master
       - main
@@ -14,6 +15,21 @@ on:
       - main
       - dev
   workflow_dispatch:
+=======
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Optional image version (e.g. 3.0.0, v3.0.0, or 3.0.0-beta.1)"
+        required: false
+        default: ""
+      include_latest:
+        description: "Include latest tag"
+        required: false
+        type: boolean
+        default: true
+>>>>>>> upstream/master
 
 jobs:
   build:
@@ -22,6 +38,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+<<<<<<< HEAD
       # This is used to complete the identity challenge
       # with sigstore/fulcio when running outside of PRs.
       id-token: write
@@ -29,19 +46,27 @@ jobs:
     strategy:
       matrix:
         db-type: [postgresql, mysql]
+=======
+>>>>>>> upstream/master
 
     steps:
       - uses: actions/checkout@v5
 
+<<<<<<< HEAD
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
       - name: Install cosign
         if: github.event_name != 'pull_request'
         uses: sigstore/cosign-installer@v3
+=======
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+>>>>>>> upstream/master
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+<<<<<<< HEAD
       - name: Log into registry docker.io
         if: github.event_name != 'pull_request' && github.repository == 'umami-software/umami' 
         uses: docker/login-action@v3
@@ -52,12 +77,16 @@ jobs:
 
       - name: Log into ghcr registry 
         if: github.event_name != 'pull_request'
+=======
+      - name: Log into GHCR
+>>>>>>> upstream/master
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+<<<<<<< HEAD
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -99,3 +128,90 @@ jobs:
           TAGS: ${{ steps.meta.outputs.tags }}
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
         run: echo "${TAGS}" | xargs -I {} cosign sign --yes "{}@${DIGEST}"
+=======
+      - name: Log into Docker Hub
+        if: github.repository == 'umami-software/umami'
+        uses: docker/login-action@v3
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Compute version tags
+        id: compute
+        run: |
+          INPUT="${{ github.event.inputs.version }}"
+          REF_TYPE="${{ github.ref_type }}"
+          REF_NAME="${{ github.ref_name }}"
+          INCLUDE_LATEST="${{ github.event.inputs.include_latest }}"
+
+          # Determine version source
+          if [[ -n "$INPUT" ]]; then
+            VERSION="${INPUT#v}"
+          elif [[ "$REF_TYPE" == "tag" ]]; then
+            VERSION="${REF_NAME#v}"
+          else
+            VERSION=""
+          fi
+
+          GHCR_TAGS=""
+          DOCKER_TAGS=""
+
+          if [[ -n "$VERSION" ]]; then
+            MAJOR=$(echo "$VERSION" | cut -d. -f1)
+            MINOR=$(echo "$VERSION" | cut -d. -f2)
+
+            if [[ "$VERSION" == *-* ]]; then
+              # prerelease: only version tag
+              GHCR_TAGS="ghcr.io/${{ github.repository }}:$VERSION"
+              DOCKER_TAGS="umamisoftware/umami:$VERSION"
+            else
+              # stable release: version + hierarchy
+              GHCR_TAGS="ghcr.io/${{ github.repository }}:$VERSION"
+              GHCR_TAGS="$GHCR_TAGS,ghcr.io/${{ github.repository }}:${MAJOR}.${MINOR}"
+              GHCR_TAGS="$GHCR_TAGS,ghcr.io/${{ github.repository }}:${MAJOR}"
+              GHCR_TAGS="$GHCR_TAGS,ghcr.io/${{ github.repository }}:postgresql-latest"
+          
+              DOCKER_TAGS="umamisoftware/umami:$VERSION"
+              DOCKER_TAGS="$DOCKER_TAGS,umamisoftware/umami:${MAJOR}.${MINOR}"
+              DOCKER_TAGS="$DOCKER_TAGS,umamisoftware/umami:${MAJOR}"
+              DOCKER_TAGS="$DOCKER_TAGS,umamisoftware/umami:postgresql-latest"
+          
+              # Add latest tag based on trigger and input
+              if [[ "$REF_TYPE" == "tag" ]] || [[ "$INCLUDE_LATEST" == "true" ]]; then
+                GHCR_TAGS="$GHCR_TAGS,ghcr.io/${{ github.repository }}:latest"
+                DOCKER_TAGS="$DOCKER_TAGS,umamisoftware/umami:latest"
+              fi
+            fi
+          else
+            # Non-tag build (e.g. from main branch)
+            GHCR_TAGS="ghcr.io/${{ github.repository }}:${REF_NAME}"
+            DOCKER_TAGS="umamisoftware/umami:${REF_NAME}"
+          fi
+
+          echo "ghcr_tags=$GHCR_TAGS" >> $GITHUB_OUTPUT
+          echo "docker_tags=$DOCKER_TAGS" >> $GITHUB_OUTPUT
+          echo "Computed GHCR tags: $GHCR_TAGS"
+          echo "Computed Docker Hub tags: $DOCKER_TAGS"
+
+      - name: Build and push to GHCR
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.compute.outputs.ghcr_tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push to Docker Hub
+        if: github.repository == 'umami-software/umami'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.compute.outputs.docker_tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+>>>>>>> upstream/master

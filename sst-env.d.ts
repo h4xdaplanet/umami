@@ -3,27 +3,27 @@
 /* eslint-disable */
 /* deno-fmt-ignore-file */
 
-declare module 'sst' {
+declare module "sst" {
   export interface Resource {
-    BigskyDb: {
-      database: string;
-      host: string;
-      password: string;
-      port: number;
-      type: 'sst.aws.Postgres';
-      username: string;
-    };
-    BigskyVpc: {
-      bastion: string;
-      type: 'sst.aws.Vpc';
-    };
-    'bigsky-umami': {
-      type: 'sst.aws.Nextjs';
-      url: string;
-    };
+    "BigskyDb": {
+      "database": string
+      "host": string
+      "password": string
+      "port": number
+      "type": "sst.aws.Postgres"
+      "username": string
+    }
+    "BigskyVpc": {
+      "bastion": string
+      "type": "sst.aws.Vpc"
+    }
+    "bigsky-umami": {
+      "type": "sst.aws.Nextjs"
+      "url": string
+    }
   }
 }
 /// <reference path="sst-env.d.ts" />
 
-import 'sst';
-export {};
+import "sst"
+export {}
