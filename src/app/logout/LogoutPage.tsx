@@ -8,7 +8,6 @@ import { setUser } from '@/store/app';
 export function LogoutPage() {
   const router = useRouter();
   const { post } = useApi();
-  const disabled = process.env.cloudMode;
 
   useEffect(() => {
     async function logout() {
